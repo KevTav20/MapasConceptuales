@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapas Conceptuales — Ingeniería de Software</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap');
+
+:root {
+  --paper: #f7f3ec;
+  --ink:   #1c1710;
+  --muted: #7d7060;
+  --rule:  rgba(28,23,16,0.12);
+  --acc0: #6b4c11;  /* Ing. Requerimientos general */
+  --acc1: #b03a2e;  /* Ciclo de vida reqs */
+  --acc2: #1a5276;  /* Taxonomía */
+  --acc3: #1e8449;  /* Elicitación */
+  --acc4: #7d3c98;  /* Modelo análisis */
+  --acc5: #b7770d;  /* Ciclo vida SW */
+  --acc6: #1a4a6b;  /* 4+1 Vistas */
+  --note: #4a3f30;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--paper);color:var(--ink);font-family:'Jost',sans-serif;font-size:14px;line-height:1.6;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");opacity:.7;}
+
+.shell{max-width:1080px;margin:0 auto;padding:3rem 2rem 5rem;}
+
+/* COVER */
+.cover{text-align:center;padding:2.5rem 1rem 2rem;border-bottom:2.5px solid var(--ink);margin-bottom:3rem;}
+.cover .kicker{font-size:.68rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:.7rem;}
+.cover h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:700;line-height:1.05;}
+.cover h1 span{font-style:italic;}
+.cover .subtitle{margin-top:.6rem;font-size:.82rem;font-weight:300;color:var(--muted);}
+.pill-row{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;margin-top:1.2rem;}
+.pill{padding:.25rem .8rem;border:1px solid currentColor;border-radius:999px;font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.pill:hover{opacity:.75;}
+
+/* NAV */
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:2.5rem;position:sticky;top:0;background:var(--paper);padding:.7rem 0;border-bottom:1px solid var(--rule);z-index:50;}
+.nav-btn{padding:.32rem .85rem;border-radius:3px;border:1px solid var(--rule);background:transparent;color:var(--muted);font-family:'Jost',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.nav-btn:hover{border-color:var(--ink);color:var(--ink);}
+.nav-btn.on{color:var(--paper);border-color:transparent;}
+
+/* MAP SECTION */
+.map-section{display:none;animation:appear .3s ease both;}
+.map-section.on{display:block;}
+@keyframes appear{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* TITLE BLOCK */
+.map-title{display:flex;align-items:flex-start;gap:1.1rem;margin-bottom:1.8rem;padding-bottom:1.1rem;border-bottom:1px solid var(--rule);}
+.map-title .marker{width:4px;min-height:55px;border-radius:2px;flex-shrink:0;margin-top:.2rem;}
+.map-title-text .tag{font-size:.63rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.3rem;}
+.map-title-text h2{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:700;line-height:1.1;}
+.map-title-text .def{margin-top:.45rem;font-size:.8rem;font-weight:300;color:var(--note);max-width:640px;line-height:1.7;}
+
+/* GRID */
+.ng{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:1.5rem;}
+.c2{grid-template-columns:repeat(2,1fr);}
+.c3{grid-template-columns:repeat(3,1fr);}
+.c4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:700px){.c3,.c4{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.c2,.c3,.c4{grid-template-columns:1fr;}}
+
+/* NODE */
+.nd{background:var(--paper);padding:1.1rem 1.3rem;position:relative;transition:background .18s;}
+.nd:hover{background:#f0ebe0;}
+.nl{font-size:.62rem;font-weight:600;letter-spacing:.17em;text-transform:uppercase;margin-bottom:.3rem;}
+.nd h3{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;margin-bottom:.45rem;line-height:1.2;}
+.nd p{font-size:.78rem;font-weight:300;color:var(--note);line-height:1.65;}
+.nd ul{font-size:.78rem;font-weight:300;color:var(--note);line-height:1.7;padding-left:1rem;margin-top:.3rem;}
+.nd .rel{font-size:.69rem;font-style:italic;color:var(--muted);margin-top:.55rem;border-top:1px solid var(--rule);padding-top:.45rem;}
+.nd .cm{position:absolute;top:.9rem;right:1.1rem;font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.45;}
+.full{grid-column:1/-1;}
+.bt3{border-top:3px solid;}
+.bl4{border-left:4px solid;}
+
+/* FLOW */
+.flow{display:flex;gap:0;border:1px solid var(--rule);overflow-x:auto;margin:1rem 0 1.5rem;}
+.fi{flex:1;min-width:105px;padding:.95rem .85rem;border-right:1px solid var(--rule);position:relative;transition:background .18s;}
+.fi:hover{background:#f0ebe0;}
+.fi:last-child{border-right:none;}
+.fi::after{content:'›';position:absolute;right:-9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem;z-index:2;}
+.fi:last-child::after{display:none;}
+.fn{font-size:.62rem;font-weight:600;letter-spacing:.14em;margin-bottom:.28rem;}
+.fi h4{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-weight:700;margin-bottom:.18rem;}
+.fi p{font-size:.7rem;font-weight:300;color:var(--muted);line-height:1.4;}
+
+/* TABLE */
+.ct{width:100%;border-collapse:collapse;margin:.8rem 0 1.5rem;}
+.ct th{font-family:'Cormorant Garamond',serif;font-size:.86rem;font-weight:700;text-align:left;padding:.65rem .95rem;background:var(--ink);color:var(--paper);}
+.ct td{padding:.62rem .95rem;border-bottom:1px solid var(--rule);font-size:.77rem;font-weight:300;line-height:1.5;vertical-align:top;}
+.ct tr:last-child td{border-bottom:none;}
+.ct tr:hover td{background:#f0ebe0;}
+.ct td:first-child{font-weight:500;width:20%;}
+
+/* RELATIONS */
+.rb{margin:1.2rem 0 1.8rem;background:#f0ebe0;border:1px solid var(--rule);padding:1.1rem 1.4rem;}
+.rb h4{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:700;margin-bottom:.7rem;}
+.rr{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:.45rem;font-size:.78rem;}
+.rr:last-child{margin-bottom:0;}
+.rn{padding:.22rem .65rem;border-radius:2px;font-weight:500;font-size:.73rem;}
+.ra{color:var(--muted);font-size:.9rem;font-weight:700;}
+.rl{font-size:.7rem;font-style:italic;color:var(--muted);}
+
+/* NOTICE */
+.notice{background:#fdf3e7;border-left:4px solid var(--acc5);padding:.9rem 1.3rem;margin:.8rem 0 1.5rem;font-size:.78rem;font-weight:300;line-height:1.7;color:var(--note);}
+.notice strong{color:var(--ink);}
+
+/* DIVIDER */
+.dv{border:none;border-top:1px dashed var(--rule);margin:1.8rem 0;}
+
+/* FOOTER */
+.pf{border-top:1px solid var(--rule);margin-top:2.5rem;padding-top:.9rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;font-size:.69rem;color:var(--muted);font-style:italic;}
+
+/* 4+1 SPECIFIC */
+.view-card{background:var(--paper);border:1px solid var(--rule);padding:1.2rem 1.4rem;position:relative;transition:background .18s;}
+.view-card:hover{background:#f0ebe0;}
+.view-header{display:flex;align-items:center;gap:.7rem;margin-bottom:.7rem;}
+.view-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
+.view-header h3{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;line-height:1.15;}
+.view-card p{font-size:.78rem;font-weight:300;color:var(--note);line-height:1.65;}
+.view-card .badge{font-size:.62rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem;}
+.view-card .stakeholders{margin-top:.7rem;padding-top:.55rem;border-top:1px solid var(--rule);font-size:.7rem;color:var(--muted);font-style:italic;}
+.view-card .components{margin-top:.5rem;font-size:.73rem;font-weight:300;color:var(--note);}
+.view-card .components strong{font-weight:600;color:var(--ink);}
+.center-view{grid-column:1/-1;background:#f0ebe0;border:1px solid var(--rule);padding:1.2rem 1.4rem;text-align:center;}
+.center-view h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;margin-bottom:.5rem;}
+.center-view p{font-size:.8rem;font-weight:300;color:var(--note);max-width:600px;margin:0 auto;line-height:1.7;}
+
+/* Diagram 4+1 SVG */
+.diagram-wrap{display:flex;justify-content:center;margin:1.2rem 0 1.8rem;overflow-x:auto;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- COVER -->
+<div class="cover">
+  <div class="kicker">Mapas Conceptuales · Ingeniería del Software</div>
+  <h1>Requerimientos &amp;<br><span>Arquitectura de Software</span></h1>
+  <div class="subtitle">Pressman 7ª Ed. (Cap. 2, 5, 6, 7) · Kruchten (IEEE Software, 1995)</div>
+  <div class="pill-row">
+    <span class="pill" style="color:var(--acc0);border-color:var(--acc0)" onclick="activate(0)">0 · Ing. Requerimientos</span>
+    <span class="pill" style="color:var(--acc1);border-color:var(--acc1)" onclick="activate(1)">1 · Ciclo Vida Reqs.</span>
+    <span class="pill" style="color:var(--acc2);border-color:var(--acc2)" onclick="activate(2)">2 · Taxonomía</span>
+    <span class="pill" style="color:var(--acc3);border-color:var(--acc3)" onclick="activate(3)">3 · Elicitación</span>
+    <span class="pill" style="color:var(--acc4);border-color:var(--acc4)" onclick="activate(4)">4 · Modelo Análisis</span>
+    <span class="pill" style="color:var(--acc5);border-color:var(--acc5)" onclick="activate(5)">5 · Ciclo Vida SW</span>
+    <span class="pill" style="color:var(--acc6);border-color:var(--acc6)" onclick="activate(6)">6 · Modelo 4+1</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn on" data-i="0">0 · Ing. Requerimientos</button>
+  <button class="nav-btn" data-i="1">1 · Ciclo Vida Reqs.</button>
+  <button class="nav-btn" data-i="2">2 · Taxonomía</button>
+  <button class="nav-btn" data-i="3">3 · Elicitación</button>
+  <button class="nav-btn" data-i="4">4 · Modelo Análisis</button>
+  <button class="nav-btn" data-i="5">5 · Ciclo Vida SW</button>
+  <button class="nav-btn" data-i="6">6 · Modelo 4+1 Vistas</button>
+</nav>
+
+<!-- ══ MAPA 0: INGENIERÍA DE REQUERIMIENTOS GENERAL ══ -->
+<section class="map-section on" id="m0">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc0)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc0)">Mapa 0 · Pressman Cap. 5</div>
+      <h2>Ingeniería de Requerimientos</h2>
+      <p class="def">Espectro amplio de tareas y técnicas para entender qué desea el cliente, analizar necesidades, evaluar factibilidad, negociar, especificar sin ambigüedades, validar y administrar los requerimientos. Es el <strong>puente entre los participantes y el diseño</strong>.</p>
+    </div>
+  </div>
+
+  <div class="ng c3">
+    <div class="nd full bl4" style="border-color:var(--acc0)">
+      <div class="nl" style="color:var(--acc0)">Concepto raíz</div>
+      <h3>¿Qué es la Ingeniería de Requerimientos?</h3>
+      <p>Proporciona el mecanismo apropiado para: <strong>entender</strong> lo que el cliente desea · <strong>analizar</strong> las necesidades · <strong>evaluar</strong> la factibilidad · <strong>negociar</strong> una solución razonable · <strong>especificar</strong> sin ambigüedades · <strong>validar</strong> la especificación · <strong>administrar</strong> los requerimientos. Sus 7 tareas son iterativas, paralelas y se adaptan al proceso, proyecto, producto y personas.</p>
+    </div>
+    <div class="nd">
+      <div class="nl" style="color:var(--acc0)">Propósito</div>
+      <h3>¿Por qué existe?</h3>
+      <p>Diseñar y construir un programa elegante que resuelve el problema equivocado no satisface a nadie. Sin la ingeniería de requerimientos el software tiene alta probabilidad de fracasar. Establece el fundamento sólido para el diseño y la construcción.</p>
+      <div class="rel">Fred Brooks: "La parte más difícil es decidir qué construir"</div>
+    </div>
+    <div class="nd">
+      <div class="nl" style="color:var(--acc0)">Ubicación en el proceso</div>
+      <h3>¿Cuándo ocurre?</h3>
+      <p>Ocurre durante las actividades de <em>comunicación</em> y <em>modelado</em> del proceso del software. Comienza con la concepción del proyecto y continúa — mediante la administración de requerimientos — durante todo el ciclo de vida del sistema.</p>
+      <div class="rel">Aplica tanto a modelos prescriptivos como ágiles</div>
+    </div>
+    <div class="nd">
+      <div class="nl" style="color:var(--acc0)">Naturaleza</div>
+      <h3>Iterativa y Adaptable</h3>
+      <p>Las 7 tareas no son estrictamente secuenciales: ocurren en paralelo y se repiten. El proceso se adapta al tamaño, complejidad y tipo de proyecto. En proyectos ágiles, la indagación puede durar horas; en sistemas críticos, meses.</p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T1</div><h4>Concepción</h4><p>Alcance, participantes, caso de negocio</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T2</div><h4>Indagación</h4><p>Recabar requerimientos del cliente</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T3</div><h4>Elaboración</h4><p>Refinar y crear modelo de análisis</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T4</div><h4>Negociación</h4><p>Priorizar y resolver conflictos</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T5</div><h4>Especificación</h4><p>ERS, modelos, prototipos</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T6</div><h4>Validación</h4><p>RTF: sin ambigüedades, consistente</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc1)">T7</div><h4>Administración</h4><p>Controlar cambios de req.</p></div>
+  </div>
+
+  <div class="ng c3">
+    <div class="nd">
+      <div class="nl" style="color:var(--acc0)">Participantes clave</div>
+      <h3>Stakeholders</h3>
+      <ul><li>Gerentes del negocio y de producto</li><li>Personal de mercadotecnia</li><li>Clientes internos y externos</li><li>Usuarios finales</li><li>Ingenieros de software y soporte</li><li>Consultores</li></ul>
+      <div class="rel">Cada uno tiene un punto de vista diferente y válido</div>
+    </div>
+    <div class="nd">
+      <div class="nl" style="color:var(--acc0)">Artefacto principal</div>
+      <h3>ERS — Especificación de Req. de Software</h3>
+      <ul><li>Documento escrito (lenguaje natural)</li><li>Conjunto de modelos gráficos (UML)</li><li>Modelo matemático formal</li><li>Conjunto de escenarios de uso</li><li>Prototipo funcional</li><li>Combinación de los anteriores</li></ul>
+      <div class="rel">Estándar de referencia: IEEE 830 / SRS</div>
+    </div>
+    <div class="nd">
+      <div class="nl" style="color:var(--acc0)">Propiedad crítica</div>
+      <h3>Volatilidad del Cambio</h3>
+      <p>Los requerimientos cambian durante toda la vida del sistema. La administración de requerimientos controla estos cambios mediante tablas de rastreo y vínculos con la configuración del software. <em>El cambio es inevitable; lo que importa es controlarlo.</em></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MAPA 1: CICLO DE VIDA DE REQUERIMIENTOS ══ -->
+<section class="map-section" id="m1">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc1)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc1)">Mapa 1 · Pressman Cap. 5</div>
+      <h2>Ciclo de Vida de los Requerimientos</h2>
+      <p class="def">Los requerimientos nacen, evolucionan, se priorizan, especifican, validan y gestionan durante todo el proyecto. Pressman estructura este proceso en <strong>7 tareas iterativas</strong> que forman el núcleo de la ingeniería de requerimientos.</p>
+    </div>
+  </div>
+  <div class="ng c3">
+    <div class="nd bt3" style="border-color:var(--acc1)">
+      <div class="nl" style="color:var(--acc1)">Fase de inicio</div>
+      <h3>Concepción</h3>
+      <p>Una necesidad del negocio o nuevo mercado desencadena el proyecto. Se define el caso de negocios, se identifica el ritmo/profundidad del mercado y se realiza análisis de factibilidad de alto nivel. Se identifican los participantes candidatos.</p>
+      <div class="rel">Salida: alcance preliminar · participantes · descripción funcional inicial</div>
+    </div>
+    <div class="nd bt3" style="border-color:var(--acc1)">
+      <div class="nl" style="color:var(--acc1)">Fase central</div>
+      <h3>Indagación → Elaboración</h3>
+      <p>La <em>indagación</em> recaba requerimientos directamente del cliente. La <em>elaboración</em> expande y refina esa información creando un modelo de análisis que identifica clases, atributos, relaciones y comportamientos.</p>
+      <div class="rel">Problemas: alcance · entendimiento · volatilidad</div>
+    </div>
+    <div class="nd bt3" style="border-color:var(--acc1)">
+      <div class="nl" style="color:var(--acc1)">Cierre de iteración</div>
+      <h3>Negociación → Especificación</h3>
+      <p>Los requerimientos conflictivos se priorizan y reconcilian. Se documentan en una ERS (puede ser escrita, gráfica o prototipo). La formalidad varía con el tamaño del proyecto.</p>
+      <div class="rel">Artefacto: ERS / SRS (IEEE 830)</div>
+    </div>
+    <div class="nd bt3" style="border-color:var(--acc1)">
+      <div class="nl" style="color:var(--acc1)">Control de calidad</div>
+      <h3>Validación</h3>
+      <p>Revisión Técnica Formal (RTF) ejecutada por ingenieros, clientes y usuarios. Se verifica: sin ambigüedad · consistencia · completitud · trazabilidad · testabilidad.</p>
+      <div class="rel">Mecanismo: lista de verificación + revisión por pares</div>
+    </div>
+    <div class="nd bt3" style="border-color:var(--acc1)">
+      <div class="nl" style="color:var(--acc1)">Actividad continua</div>
+      <h3>Administración de Reqs.</h3>
+      <p>Identifica, controla y da seguimiento a los requerimientos y sus cambios en cualquier momento del ciclo de vida. Emplea tablas de rastreo. Vinculada con la Administración de la Configuración del Software (ACS).</p>
+      <div class="rel">Principio: el cambio es inevitable, debe controlarse</div>
+    </div>
+    <div class="nd bt3" style="border-color:var(--acc1)">
+      <div class="nl" style="color:var(--acc1)">Propiedad clave</div>
+      <h3>Naturaleza Iterativa</h3>
+      <p>Las 7 tareas ocurren en paralelo y se repiten en ciclos. Un requerimiento puede volver a indagarse, elaborarse y validarse múltiples veces. Aplica tanto en modelos prescriptivos como ágiles.</p>
+    </div>
+  </div>
+  <div class="rb">
+    <h4>Relaciones de flujo y retroalimentación</h4>
+    <div class="rr"><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Necesidad del negocio</span><span class="ra">→</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Concepción</span><span class="ra">→</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Indagación</span><span class="ra">→</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">ERS</span><span class="ra">→</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Diseño</span><span class="rl">flujo principal</span></div>
+    <div class="rr"><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Cambio en el negocio</span><span class="ra">→</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Administración</span><span class="ra">↔</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Re-indagación</span><span class="rl">ciclo de cambio</span></div>
+    <div class="rr"><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Validación fallida</span><span class="ra">→</span><span class="rn" style="background:rgba(176,58,46,.1);color:var(--acc1)">Volver a Indagación/Elaboración</span><span class="rl">retroalimentación</span></div>
+  </div>
+</section>
+
+<!-- ══ MAPA 2: TAXONOMÍA ══ -->
+<section class="map-section" id="m2">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc2)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc2)">Mapa 2 · Pressman Cap. 5–6</div>
+      <h2>Taxonomía de los Requerimientos</h2>
+      <p class="def">Pressman clasifica los requerimientos por <strong>naturaleza</strong> (funcionales, no funcionales, restricciones), y describe la <strong>taxonomía de clases de análisis</strong> que los representa durante la elaboración.</p>
+    </div>
+  </div>
+  <div class="ng c3">
+    <div class="nd bt3" style="border-color:var(--acc2)"><div class="nl" style="color:var(--acc2)">Tipo 1</div><h3>Requerimientos Funcionales</h3><p>Describen <em>qué hace</em> el sistema: servicios, comportamientos y funciones específicas visibles para el usuario. Son la base de los casos de uso y escenarios de uso.</p><div class="rel">Ejemplo: "El sistema permitirá autenticarse con usuario y contraseña"</div></div>
+    <div class="nd bt3" style="border-color:var(--acc2)"><div class="nl" style="color:var(--acc2)">Tipo 2</div><h3>Requerimientos No Funcionales</h3><p>Restricciones sobre <em>cómo</em> funciona el sistema: desempeño, seguridad, fiabilidad, usabilidad, mantenibilidad, portabilidad. Afectan la calidad, no las funciones.</p><div class="rel">Subtipos: desempeño · seguridad · estabilidad · atributos de calidad</div></div>
+    <div class="nd bt3" style="border-color:var(--acc2)"><div class="nl" style="color:var(--acc2)">Tipo 3</div><h3>Restricciones del Dominio</h3><p>Impuestas por el entorno: hardware disponible, estándares regulatorios, normativas del negocio, compatibilidad con sistemas heredados.</p><div class="rel">Ejemplo: "El sistema operará bajo ISO/IEC 27001"</div></div>
+  </div>
+  <div class="ng c2">
+    <div class="nd"><div class="nl" style="color:var(--acc2)">Taxonomía de Bud [Bud96]</div><h3>Clases de Análisis — 7 Tipos</h3>
+      <ul><li><strong>Entidades externas</strong> — otros sistemas, dispositivos, personas que producen/consumen información</li><li><strong>Cosas</strong> — informes, pantallas, señales del dominio</li><li><strong>Ocurrencias/eventos</strong> — transiciones de estado en el contexto del sistema</li><li><strong>Roles</strong> — actores que interactúan (usuario, operador, administrador)</li><li><strong>Unidades organizacionales</strong> — departamentos o grupos relevantes</li><li><strong>Lugares</strong> — locaciones que establecen el contexto operacional</li><li><strong>Estructuras</strong> — conjuntos de objetos o clases relacionadas</li></ul>
+    </div>
+    <div class="nd"><div class="nl" style="color:var(--acc2)">Criterio de inclusión de clases</div><h3>¿Cuándo incluir una clase candidata?</h3>
+      <ul><li><strong>Información retenida</strong> — ¿debe recordarse información sobre ella?</li><li><strong>Servicios necesarios</strong> — ¿tiene operaciones que transforman datos?</li><li><strong>Atributos múltiples</strong> — ¿tiene más de un atributo relevante?</li><li><strong>Atributos comunes</strong> — ¿aplican a todas sus instancias?</li><li><strong>Operaciones comunes</strong> — ¿aplican a todas sus instancias?</li><li><strong>Requisito esencial</strong> — ¿es esencial para el sistema, no solo para el diseño?</li></ul>
+    </div>
+  </div>
+  <table class="ct">
+    <thead><tr><th>Tipo</th><th>Pregunta que responde</th><th>Ejemplo en la ERS</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--acc2)">Funcional</td><td>¿Qué debe hacer el sistema?</td><td>"El sistema calculará el total de factura sumando todos los ítems"</td></tr>
+      <tr><td style="color:var(--acc2)">Rendimiento</td><td>¿Qué tan rápido/eficiente?</td><td>"Tiempo de respuesta ≤ 2 segundos bajo carga normal"</td></tr>
+      <tr><td style="color:var(--acc2)">Seguridad</td><td>¿Cómo se protege?</td><td>"El acceso requiere autenticación de doble factor"</td></tr>
+      <tr><td style="color:var(--acc2)">Interfaz</td><td>¿Con qué interactúa?</td><td>"Se integrará con la API REST del ERP corporativo"</td></tr>
+      <tr><td style="color:var(--acc2)">Dominio</td><td>¿Qué impone el entorno?</td><td>"Operará solo sobre Windows Server 2022"</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ MAPA 3: ELICITACIÓN ══ -->
+<section class="map-section" id="m3">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc3)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc3)">Mapa 3 · Pressman Cap. 5</div>
+      <h2>Técnicas de Obtención (Elicitación)</h2>
+      <p class="def">La <em>indagación</em> es la segunda tarea. Pressman describe cuatro técnicas para obtener requerimientos, cada una con sus fortalezas y contextos óptimos de aplicación.</p>
+    </div>
+  </div>
+  <div class="ng c3">
+    <div class="nd full" style="border-top:3px solid #c0392b"><div class="nl" style="color:#c0392b">Los 3 obstáculos de Christel &amp; Kang (1992)</div><h3>Problemas de la Indagación</h3><p><strong>Alcance:</strong> frontera mal definida, el cliente añade detalles técnicos innecesarios.&ensp;<strong>Entendimiento:</strong> el cliente no sabe exactamente qué necesita, omite información "obvia" o tiene requerimientos conflictivos.&ensp;<strong>Volatilidad:</strong> los requerimientos cambian durante el desarrollo.</p></div>
+  </div>
+  <div class="ng c2">
+    <div class="nd bl4" style="border-color:var(--acc3)"><div class="nl" style="color:var(--acc3)">Técnica 1</div><h3>Recabación Colaborativa</h3><p>Reuniones formales con todos los participantes mediadas por un <strong>facilitador neutral</strong>. Cada participante prepara una lista de requerimientos previa. Se usa un mecanismo de negociación acordado. El resultado es un borrador del documento de requerimientos.</p><div class="rel">JAD · Facilitated Application Specification Techniques (FAST)</div></div>
+    <div class="nd bl4" style="border-color:var(--acc3)"><div class="nl" style="color:var(--acc3)">Técnica 2</div><h3>Despliegue de la Función de Calidad (DFC/QFD)</h3><p>Traduce necesidades del cliente en requisitos técnicos. Distingue: <strong>normales</strong> (declarados explícitamente) · <strong>esperados</strong> (implícitos, su ausencia causa insatisfacción) · <strong>emocionantes</strong> (inesperados, deleitan al usuario).</p><div class="rel">Herramienta: Casa de la Calidad · Origen: manufactura japonesa</div></div>
+    <div class="nd bl4" style="border-color:var(--acc3)"><div class="nl" style="color:var(--acc3)">Técnica 3</div><h3>Escenarios de Uso (Casos de Uso)</h3><p>Narrativas que describen cómo un <strong>actor</strong> interactúa con el sistema para lograr un objetivo. Se inicia con un caso <em>preliminar</em> (informal), se mejora iterativamente hasta llegar a un <em>caso formal</em> con precondición, postcondición, flujo básico y alternativo.</p><div class="rel">Base para: elaboración del modelo · diseño de pruebas de aceptación</div></div>
+    <div class="nd bl4" style="border-color:var(--acc3)"><div class="nl" style="color:var(--acc3)">Técnica 4</div><h3>Indagación de Productos del Trabajo</h3><p>Análisis de documentos y artefactos existentes: formularios, reportes, procedimientos, sistemas en uso y sus limitaciones. No requiere reuniones pero permite descubrir requerimientos implícitos que el cliente nunca menciona.</p><div class="rel">Incluye: entrevistas · cuestionarios · observación directa del proceso</div></div>
+  </div>
+  <div class="ng c3">
+    <div class="nd"><div class="nl" style="color:var(--acc3)">Establecer las bases — Paso 1</div><h3>Identificar Participantes</h3><p>Lista inicial de quién contribuirá. A cada participante se le pregunta: <em>"¿A quién más debe consultarse?"</em> La lista crece hasta cubrir todos los puntos de vista.</p></div>
+    <div class="nd"><div class="nl" style="color:var(--acc3)">Establecer las bases — Paso 2</div><h3>Múltiples Puntos de Vista</h3><p>Mercadotecnia quiere funciones vendibles. Gerentes buscan presupuesto. Usuarios quieren facilidad. Ingenieros ven infraestructura. Soporte piensa en mantenibilidad. Todos son válidos y frecuentemente incompatibles.</p></div>
+    <div class="nd"><div class="nl" style="color:var(--acc3)">Establecer las bases — Paso 3</div><h3>Trabajar hacia la Colaboración</h3><p>El objetivo no es "ganar" sino llegar a entendimiento común. La colaboración crea requerimientos más robustos y reduce retrabajos. El facilitador es clave para mantener el enfoque.</p></div>
+  </div>
+</section>
+
+<!-- ══ MAPA 4: MODELO DE ANÁLISIS ══ -->
+<section class="map-section" id="m4">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc4)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc4)">Mapa 4 · Pressman Cap. 6–7</div>
+      <h2>El Modelo de Análisis</h2>
+      <p class="def">El modelo de análisis —también llamado modelo de requerimientos— es la representación técnica de los requerimientos. Actúa como <strong>puente</strong> entre la descripción del sistema (participantes) y el modelo del diseño (arquitectura). Tiene cuatro dimensiones complementarias.</p>
+    </div>
+  </div>
+  <div class="ng c3">
+    <div class="nd bt3" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Objetivo 1</div><h3>Describir lo que quiere el cliente</h3><p>Captura los requerimientos desde el punto de vista del usuario. Foco en el <strong>qué</strong>, no en el cómo. No debe describir la implementación ni la infraestructura.</p></div>
+    <div class="nd bt3" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Objetivo 2</div><h3>Base para el diseño</h3><p>Cada elemento del modelo se rastrea directamente a partes del modelo del diseño (arquitectura, interfaz, componentes). Es la entrada principal al proceso de diseño de software.</p></div>
+    <div class="nd bt3" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Objetivo 3</div><h3>Criterios de validación</h3><p>Define los requerimientos que serán validados una vez construido el software. Los casos de uso se convierten en casos de prueba de aceptación.</p></div>
+  </div>
+  <div class="ng c2">
+    <div class="nd bl4" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Dimensión 1 — Cap. 6</div><h3>Modelos Basados en Escenario</h3><p>Ilustran cómo actores interactúan con el sistema y la secuencia de actividades. Incluyen: casos de uso (narrativo + UML), diagramas de actividades y diagramas swimlane.</p><div class="rel">Notación: diagrama de casos de uso UML · diagrama de actividades</div></div>
+    <div class="nd bl4" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Dimensión 2 — Cap. 6</div><h3>Modelos Basados en Clase</h3><p>Representan entidades del dominio del negocio: atributos, operaciones, relaciones y colaboraciones. El modelado CRC (Clase-Responsabilidad-Colaborador) es la técnica central.</p><div class="rel">Notación: diagrama de clases UML · tarjetas CRC · paquetes de análisis</div></div>
+    <div class="nd bl4" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Dimensión 3 — Cap. 7</div><h3>Modelos Orientados al Flujo</h3><p>El sistema como transformación de información. Los datos de entrada fluyen por procesos hasta producir salidas. Incluye flujo de datos y flujo de control.</p><div class="rel">Notación: DFD · CSPEC (especif. de control) · PSPEC (especif. de proceso)</div></div>
+    <div class="nd bl4" style="border-color:var(--acc4)"><div class="nl" style="color:var(--acc4)">Dimensión 4 — Cap. 7</div><h3>Modelos de Comportamiento</h3><p>Conjunto de estados y transiciones desencadenadas por eventos externos. Responden: ¿cómo reacciona el sistema cuando ocurre X?</p><div class="rel">Notación: diagrama de estados UML · diagrama de secuencia</div></div>
+  </div>
+  <div class="ng c3">
+    <div class="nd"><div class="nl" style="color:var(--acc4)">Regla de Arlow &amp; Neustadt</div><h3>Centrarse en el dominio</h3><p>El modelo debe centrarse en requerimientos visibles en el dominio del negocio. No debe adentrarse en la infraestructura ni en el cómo funciona el sistema.</p></div>
+    <div class="nd"><div class="nl" style="color:var(--acc4)">Regla de acoplamiento</div><h3>Minimizar el acoplamiento</h3><p>Si la interconectividad entre clases y funciones es extremadamente alta, reducirla. El bajo acoplamiento en el análisis facilita el diseño y la prueba posterior.</p></div>
+    <div class="nd"><div class="nl" style="color:var(--acc4)">Regla de simplicidad</div><h3>Mantener el modelo simple</h3><p>No generar diagramas adicionales si no añaden nueva información. No usar notación compleja cuando una lista simple es suficiente. Ed Yourdon: los modelos resaltan lo crítico, ignorando lo irrelevante.</p></div>
+  </div>
+</section>
+
+<!-- ══ MAPA 5: CICLO DE VIDA SW ══ -->
+<section class="map-section" id="m5">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc5)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc5)">Mapa 5 · Pressman Cap. 2–3</div>
+      <h2>Ciclo de Vida del Software — Modelos</h2>
+      <p class="def">Pressman describe <strong>modelos prescriptivos</strong> (cascada, incremental, espiral, PU) y <strong>modelos ágiles</strong> (XP, Scrum). Todos comparten las mismas 5 actividades estructurales: comunicación, planeación, modelado, construcción y despliegue.</p>
+    </div>
+  </div>
+  <div class="flow">
+    <div class="fi"><div class="fn" style="color:var(--acc5)">Estructura</div><h4>Comunicación</h4><p>Inicio, recabar requerimientos</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc5)">Estructura</div><h4>Planeación</h4><p>Estimación, riesgos, programación</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc5)">Estructura</div><h4>Modelado</h4><p>Análisis y diseño</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc5)">Estructura</div><h4>Construcción</h4><p>Código y pruebas</p></div>
+    <div class="fi"><div class="fn" style="color:var(--acc5)">Estructura</div><h4>Despliegue</h4><p>Entrega y retroalimentación</p></div>
+  </div>
+  <div class="ng c2">
+    <div class="nd bt3" style="border-color:var(--acc5)"><div class="nl" style="color:var(--acc5)">Prescriptivo · Cap. 2</div><h3>Cascada (Ciclo de Vida Clásico)</h3><p>Flujo lineal y secuencial. Cada fase debe completarse antes de iniciar la siguiente. Adecuado solo cuando los requerimientos son <strong>estables y bien definidos</strong> desde el inicio. Variante: Modelo en V (añade verificación/validación explícita).</p><div class="rel">Limitación: estados de bloqueo · reqs. difíciles de especificar por completo al inicio</div></div>
+    <div class="nd bt3" style="border-color:var(--acc5)"><div class="nl" style="color:var(--acc5)">Prescriptivo · Cap. 2</div><h3>Incremental</h3><p>Combina flujos lineales y paralelos. Entrega versiones operativas en <em>incrementos</em>. El primer incremento es el producto fundamental. Útil cuando el personal es limitado o los plazos son cortos. Cada incremento añade funcionalidad.</p><div class="rel">Principio: entregar algo funcional cuanto antes; crecer iterativamente</div></div>
+    <div class="nd bt3" style="border-color:var(--acc5)"><div class="nl" style="color:var(--acc5)">Prescriptivo Evolutivo · Cap. 2</div><h3>Espiral (Boehm, 1988)</h3><p>Combina prototipado con modelo cascada. Cada ciclo pasa por: <strong>planeación → análisis de riesgo → construcción → evaluación</strong>. El <em>riesgo</em> es la dimensión guía. Para proyectos grandes y complejos con alta incertidumbre técnica.</p><div class="rel">Característica clave: gestión explícita del riesgo en cada iteración</div></div>
+    <div class="nd bt3" style="border-color:var(--acc5)"><div class="nl" style="color:var(--acc5)">Unificado · Cap. 2</div><h3>Proceso Unificado (PU / RUP)</h3><p>Jacobson, Booch y Rumbaugh. <em>Impulsado por casos de uso, centrado en arquitectura, iterativo e incremental.</em> Fases: <strong>Concepción → Elaboración → Construcción → Transición → Producción</strong>. Notación: UML.</p><div class="rel">Combina lo mejor de modelos tradicionales con principios ágiles</div></div>
+  </div>
+  <div class="ng c3">
+    <div class="nd"><div class="nl" style="color:var(--acc3)">Ágil · Cap. 3</div><h3>Programación Extrema (XP)</h3><p>Programación en parejas, pruebas continuas, refactorización, integración continua, participación directa del cliente. Historias de usuario como variante de casos de uso.</p></div>
+    <div class="nd"><div class="nl" style="color:var(--acc3)">Ágil · Cap. 3</div><h3>Scrum</h3><p>Sprints de 30 días. Backlog priorizado de producto. Reuniones diarias de 15 min (Scrum). Un Scrum Master facilita el proceso. Entrega un incremento demostrable al final de cada sprint.</p></div>
+    <div class="nd"><div class="nl" style="color:var(--acc3)">Ágil · Cap. 3</div><h3>Otros Modelos Ágiles</h3><p>DAS · MDSD · Cristal · DIC (Desarrollo Impulsado por Características) · Modelado Ágil (MA) · PUA (Proceso Unificado Ágil). Todos siguen el Manifiesto Ágil.</p></div>
+  </div>
+  <table class="ct">
+    <thead><tr><th>Modelo</th><th>Filosofía central</th><th>Cuándo usarlo</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--acc5)">Cascada</td><td>Secuencial, una fase a la vez</td><td>Reqs. estables, proyectos de adaptación o mejora definida</td></tr>
+      <tr><td style="color:var(--acc5)">Incremental</td><td>Entregar valor parcial iterativamente</td><td>Plazos cortos, reqs. razonablemente definidos</td></tr>
+      <tr><td style="color:var(--acc5)">Espiral</td><td>Gestión explícita del riesgo</td><td>Proyectos grandes, alta incertidumbre técnica</td></tr>
+      <tr><td style="color:var(--acc5)">PU / RUP</td><td>Iterativo, centrado en arquitectura</td><td>Proyectos OO medianos/grandes, uso de UML</td></tr>
+      <tr><td style="color:var(--acc3)">XP / Scrum</td><td>Agilidad y retroalimentación continua</td><td>Reqs. cambiantes, equipos pequeños, webapps</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ MAPA 6: MODELO 4+1 VISTAS ══ -->
+<section class="map-section" id="m6">
+  <div class="map-title">
+    <div class="marker" style="background:var(--acc6)"></div>
+    <div class="map-title-text">
+      <div class="tag" style="color:var(--acc6)">Mapa 6 · Kruchten, IEEE Software 12(6), 1995</div>
+      <h2>Modelo 4+1 Vistas<br>(Philippe Kruchten)</h2>
+      <p class="def">Modelo para describir la arquitectura de sistemas software mediante <strong>múltiples vistas concurrentes</strong>. Cada vista atiende las preocupaciones de un grupo diferente de stakeholders. Las cuatro vistas principales se integran mediante una quinta: los <strong>escenarios</strong>.</p>
+    </div>
+  </div>
+
+  <!-- Diagrama SVG del modelo 4+1 -->
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;font-family:'Jost',sans-serif;">
+      <!-- center -->
+      <ellipse cx="320" cy="180" rx="72" ry="40" fill="#1a4a6b" fill-opacity=".12" stroke="#1a4a6b" stroke-width="1.5"/>
+      <text x="320" y="175" text-anchor="middle" fill="#1a4a6b" font-size="11" font-weight="600">ESCENARIOS</text>
+      <text x="320" y="190" text-anchor="middle" fill="#1a4a6b" font-size="9" font-weight="300">+1 · Casos de uso</text>
+      <!-- lines -->
+      <line x1="320" y1="140" x2="320" y2="62" stroke="#1a4a6b" stroke-width="1.2" stroke-opacity=".4" stroke-dasharray="4 3"/>
+      <line x1="255" y1="165" x2="138" y2="150" stroke="#1a4a6b" stroke-width="1.2" stroke-opacity=".4" stroke-dasharray="4 3"/>
+      <line x1="385" y1="165" x2="500" y2="150" stroke="#1a4a6b" stroke-width="1.2" stroke-opacity=".4" stroke-dasharray="4 3"/>
+      <line x1="320" y1="220" x2="320" y2="298" stroke="#1a4a6b" stroke-width="1.2" stroke-opacity=".4" stroke-dasharray="4 3"/>
+      <!-- top: Logical -->
+      <rect x="248" y="22" width="144" height="44" rx="4" fill="#1a4a6b" fill-opacity=".1" stroke="#1a4a6b" stroke-width="1.3"/>
+      <text x="320" y="41" text-anchor="middle" fill="#1a4a6b" font-size="11" font-weight="600">Vista Lógica</text>
+      <text x="320" y="56" text-anchor="middle" fill="#1a4a6b" font-size="9">Usuario final · Funcionalidad</text>
+      <!-- left: Development -->
+      <rect x="40" y="122" width="144" height="44" rx="4" fill="#2e86c1" fill-opacity=".1" stroke="#2e86c1" stroke-width="1.3"/>
+      <text x="112" y="141" text-anchor="middle" fill="#2e86c1" font-size="11" font-weight="600">Vista de Desarrollo</text>
+      <text x="112" y="156" text-anchor="middle" fill="#2e86c1" font-size="9">Programador · Organización</text>
+      <!-- right: Process -->
+      <rect x="458" y="122" width="144" height="44" rx="4" fill="#196f3d" fill-opacity=".1" stroke="#196f3d" stroke-width="1.3"/>
+      <text x="530" y="141" text-anchor="middle" fill="#196f3d" font-size="11" font-weight="600">Vista de Procesos</text>
+      <text x="530" y="156" text-anchor="middle" fill="#196f3d" font-size="9">Integrador · Rendimiento</text>
+      <!-- bottom: Physical -->
+      <rect x="248" y="298" width="144" height="44" rx="4" fill="#7b241c" fill-opacity=".1" stroke="#7b241c" stroke-width="1.3"/>
+      <text x="320" y="317" text-anchor="middle" fill="#7b241c" font-size="11" font-weight="600">Vista Física</text>
+      <text x="320" y="332" text-anchor="middle" fill="#7b241c" font-size="9">Ing. de sistemas · Topología</text>
+      <!-- labels -->
+      <text x="320" y="12" text-anchor="middle" fill="#7d7060" font-size="9" font-style="italic">Modelo 4+1 Vistas — Kruchten (1995)</text>
+    </svg>
+  </div>
+
+  <!-- 5 vistas -->
+  <div class="ng c2">
+    <div class="view-card" style="border-top:3px solid #1a4a6b">
+      <div class="view-header">
+        <div class="view-icon" style="background:rgba(26,74,107,.15);color:#1a4a6b">L</div>
+        <div><div class="badge" style="color:#1a4a6b">Vista 1</div><h3>Vista Lógica</h3></div>
+      </div>
+      <p>Soporta los <strong>requerimientos funcionales</strong>: qué servicios debe proporcionar el sistema a sus usuarios. El sistema se descompone en abstracciones clave del dominio del problema en forma de <em>objetos o clases</em>. Explota abstracción, encapsulación y herencia.</p>
+      <div class="components"><strong>Componentes:</strong> Clase · Clase parametrizada · Utilidad · Categoría de clase<br><strong>Conectores:</strong> Asociación · Contenencia · Uso · Herencia · Instanciación</div>
+      <div class="stakeholders">Interesados: <strong>usuario final</strong> — preocupación: funcionalidad · Notación: Booch/UML (diagrama de clases, plantillas, diagramas de estado)</div>
+    </div>
+
+    <div class="view-card" style="border-top:3px solid #196f3d">
+      <div class="view-header">
+        <div class="view-icon" style="background:rgba(25,111,61,.15);color:#196f3d">Pr</div>
+        <div><div class="badge" style="color:#196f3d">Vista 2</div><h3>Vista de Procesos</h3></div>
+      </div>
+      <p>Atiende requerimientos <strong>no funcionales</strong>: rendimiento, disponibilidad, tolerancia a fallos. Aborda la <em>concurrencia y distribución</em> del sistema: cómo se ejecutan los objetos de la vista lógica, en qué hilo de control, cómo se comunican los procesos.</p>
+      <div class="components"><strong>Componentes:</strong> Proceso · Proceso simplificado<br><strong>Conectores:</strong> Mensaje · RPC · Difusión de eventos · Proceso periódico</div>
+      <div class="stakeholders">Interesados: <strong>integrador, diseñador de sistemas</strong> — preocupación: rendimiento, disponibilidad, integridad de S/W · Estilos: tuberías y filtros, cliente/servidor</div>
+    </div>
+
+    <div class="view-card" style="border-top:3px solid #2e86c1">
+      <div class="view-header">
+        <div class="view-icon" style="background:rgba(46,134,193,.15);color:#2e86c1">D</div>
+        <div><div class="badge" style="color:#2e86c1">Vista 3</div><h3>Vista de Desarrollo</h3></div>
+      </div>
+      <p>Describe la <strong>organización estática del software</strong> en el entorno de desarrollo. El software se empaqueta en módulos, bibliotecas y subsistemas organizados en una <em>jerarquía de capas</em>. Guía la asignación de trabajo a equipos y la gestión de configuración.</p>
+      <div class="components"><strong>Componentes:</strong> Módulo · Subsistema · Capa<br><strong>Conectores:</strong> Dependencia de compilación · "with" / "include"</div>
+      <div class="stakeholders">Interesados: <strong>programador, gerente de software</strong> — preocupación: organización, reutilización, portabilidad · Estilo recomendado: capas (4 a 6)</div>
+    </div>
+
+    <div class="view-card" style="border-top:3px solid #7b241c">
+      <div class="view-header">
+        <div class="view-icon" style="background:rgba(123,36,28,.15);color:#7b241c">F</div>
+        <div><div class="badge" style="color:#7b241c">Vista 4</div><h3>Vista Física</h3></div>
+      </div>
+      <p>Describe el <strong>mapeo del software al hardware</strong>: redes de computadoras, nodos de procesamiento, cómo se despliegan los procesos y objetos en los nodos. Atiende disponibilidad, tolerancia a fallos, escalabilidad y desempeño físico.</p>
+      <div class="components"><strong>Componentes:</strong> Procesador · Dispositivo<br><strong>Conectores:</strong> LAN · WAN · Bus · Línea de comunicación unidireccional</div>
+      <div class="stakeholders">Interesados: <strong>ingeniero de sistemas</strong> — preocupación: topología, comunicaciones, escalabilidad · Múltiples configuraciones (desarrollo, prueba, producción)</div>
+    </div>
+  </div>
+
+  <!-- Vista +1: Escenarios -->
+  <div class="ng" style="margin-bottom:1.5rem">
+    <div class="nd full" style="border:2px solid #1a4a6b;background:rgba(26,74,107,.04)">
+      <div class="nl" style="color:#1a4a6b">Vista +1 — La quinta vista integradora</div>
+      <h3>Escenarios (Casos de Uso)</h3>
+      <p>Las cuatro vistas se demuestran funcionando juntas mediante un pequeño conjunto de <strong>escenarios importantes</strong> (instancias de casos de uso). Sirven con dos propósitos: <em>(1) como motor de descubrimiento</em> de los elementos arquitectónicos durante el diseño — cada escenario "scripted" revela clases, procesos, subsistemas y nodos; y <em>(2) como validación e ilustración</em> una vez completo el diseño.</p>
+      <p style="margin-top:.5rem">La notación combina componentes de la Vista Lógica con conectores de la Vista de Procesos. Los escenarios son "redundantes" con las otras vistas (de ahí el "+1"), pero son los que integran y dan sentido a la arquitectura completa.</p>
+      <div class="rel">Notación: diagramas de escenario de objetos · diagramas de interacción de objetos · secuencias numeradas</div>
+    </div>
+  </div>
+
+  <!-- Correspondencias entre vistas -->
+  <div class="rb">
+    <h4>Correspondencias entre las vistas</h4>
+    <div class="rr"><span class="rn" style="background:rgba(26,74,107,.1);color:#1a4a6b">Vista Lógica</span><span class="ra">→</span><span class="rn" style="background:rgba(25,111,61,.1);color:#196f3d">Vista de Procesos</span><span class="rl">Mapeo de clases/objetos a procesos y tareas según autonomía, persistencia, distribución</span></div>
+    <div class="rr"><span class="rn" style="background:rgba(26,74,107,.1);color:#1a4a6b">Vista Lógica</span><span class="ra">→</span><span class="rn" style="background:rgba(46,134,193,.1);color:#2e86c1">Vista de Desarrollo</span><span class="rl">Una clase → un módulo; categorías de clases → subsistemas (no siempre 1:1)</span></div>
+    <div class="rr"><span class="rn" style="background:rgba(25,111,61,.1);color:#196f3d">Vista de Procesos</span><span class="ra">→</span><span class="rn" style="background:rgba(123,36,28,.1);color:#7b241c">Vista Física</span><span class="rl">Procesos y grupos de procesos se mapean al hardware disponible para producción/prueba</span></div>
+    <div class="rr"><span class="rn" style="background:rgba(26,74,107,.12);color:#1a4a6b">Escenarios</span><span class="ra">↔</span><span class="rn" style="background:rgba(26,74,107,.1);color:#1a4a6b">Vista Lógica</span><span class="ra">+</span><span class="rn" style="background:rgba(25,111,61,.1);color:#196f3d">Vista de Procesos</span><span class="rl">Los escenarios referencian clases (lógica) y procesos (cuando hay múltiples hilos)</span></div>
+  </div>
+
+  <!-- Tabla resumen -->
+  <table class="ct">
+    <thead><tr><th>Vista</th><th>Componentes</th><th>Stakeholders</th><th>Preocupación central</th></tr></thead>
+    <tbody>
+      <tr><td style="color:#1a4a6b">Lógica</td><td>Clase, categoría</td><td>Usuario final</td><td>Funcionalidad</td></tr>
+      <tr><td style="color:#196f3d">Procesos</td><td>Tarea, proceso</td><td>Diseñador, integrador</td><td>Rendimiento, disponibilidad, tolerancia a fallos</td></tr>
+      <tr><td style="color:#2e86c1">Desarrollo</td><td>Módulo, subsistema</td><td>Programador, gerente</td><td>Organización, reutilización, portabilidad</td></tr>
+      <tr><td style="color:#7b241c">Física</td><td>Nodo, procesador</td><td>Ing. de sistemas</td><td>Escalabilidad, topología, comunicaciones</td></tr>
+      <tr><td style="color:#1a4a6b">Escenarios (+1)</td><td>Paso, script</td><td>Usuario final, desarrollador</td><td>Comprensibilidad, descubrimiento arquitectónico</td></tr>
+    </tbody>
+  </table>
+
+  <div class="notice">
+    <strong>Cuándo simplificar el modelo:</strong> No toda arquitectura necesita las 4+1 vistas. La Vista Física puede omitirse si hay un solo procesador. La Vista de Procesos puede omitirse si hay un solo proceso. Para sistemas pequeños, la Vista Lógica y la de Desarrollo pueden ser tan similares que no requieran descripciones separadas. Los escenarios son útiles en toda circunstancia.
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="pf">
+  <span>Pressman (Cap. 2, 5, 6, 7) · Kruchten, Ph. "Architectural Blueprints — The '4+1' View Model", IEEE Software 12(6), 1995, pp. 42–50</span>
+  <span>Ingeniería del Software: Un Enfoque Práctico, 7ª Ed.</span>
+</footer>
+</div>
+
+<script>
+const COLORS = ['var(--acc0)','var(--acc1)','var(--acc2)','var(--acc3)','var(--acc4)','var(--acc5)','var(--acc6)'];
+const btns = document.querySelectorAll('.nav-btn');
+const maps = document.querySelectorAll('.map-section');
+
+function activate(i){
+  btns.forEach((b,j)=>{
+    b.classList.toggle('on',j===i);
+    b.style.background = j===i ? COLORS[j] : '';
+    b.style.color = j===i ? '#f7f3ec' : '';
+    b.style.borderColor = j===i ? 'transparent' : '';
+  });
+  maps.forEach((m,j)=> m.classList.toggle('on',j===i));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+btns.forEach((b,i)=> b.addEventListener('click',()=> activate(i)));
+// init
+btns[0].style.background = COLORS[0];
+btns[0].style.color = '#f7f3ec';
+btns[0].style.borderColor = 'transparent';
+</script>
+</body>
+</html>
